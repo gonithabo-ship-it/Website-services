@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outreach · Morning Run</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar:#0f1117;--sidebar-border:#1e2030;--canvas:#f8f7f4;--surface:#ffffff;
+  --amber:#f59e0b;--amber-dim:#fbbf24;--amber-bg:#fffbeb;
+  --ink:#111318;--ink2:#4b5563;--ink3:#9ca3af;--border:#e5e2da;
+  --radius:8px;--radius-lg:12px;
+  --gmail:#ea4335;--sms:#22c55e;--ig:#e1306c;--fb:#1877f2;--li:#0a66c2;
+}
+html,body{height:100%;font-family:system-ui,-apple-system,sans-serif;font-size:14px;color:var(--ink);background:var(--canvas)}
+button{cursor:pointer;font-family:inherit;font-size:14px}
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:280px;flex-shrink:0;background:var(--sidebar);color:#e5e7eb;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#2a3248;border-radius:4px}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+
+/* ── SIDEBAR ── */
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--sidebar-border)}
+.sidebar-logo{font-size:15px;font-weight:600;color:#fff;letter-spacing:-0.02em}
+.sidebar-logo span{color:var(--amber)}
+.sidebar-sub{font-size:11px;color:#6b7280;margin-top:3px}
+.s-section{padding:14px 20px;border-bottom:1px solid var(--sidebar-border)}
+.s-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:10px}
+.sidebar label{display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;margin-top:10px}
+.sidebar label:first-of-type{margin-top:0}
+.sidebar input,.sidebar select{width:100%;background:#1a1d2e;border:1px solid var(--sidebar-border);border-radius:6px;color:#e5e7eb;font-size:12px;padding:7px 10px;font-family:inherit;outline:none;transition:border-color .15s}
+.sidebar input:focus,.sidebar select:focus{border-color:#374151}
+.hint{font-size:11px;color:#4b5563;margin-top:4px;line-height:1.5}
+
+/* platform connection cards */
+.platform-cards{display:flex;flex-direction:column;gap:7px}
+.pcard{background:#1a1d2e;border:1px solid var(--sidebar-border);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.pcard-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:#fff}
+.pcard-icon.gmail{background:var(--gmail)}
+.pcard-icon.sms{background:var(--sms)}
+.pcard-icon.ig{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)}
+.pcard-icon.fb{background:var(--fb)}
+.pcard-icon.li{background:var(--li)}
+.pcard-meta{flex:1;min-width:0}
+.pcard-name{font-size:12px;font-weight:600;color:#e2e8f0}
+.pcard-status{font-size:11px;color:#4b5563;margin-top:1px}
+.pcard-status.connected{color:#22c55e}
+.pcard-status.limited{color:var(--amber)}
+.pcard-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:5px;border:none;cursor:pointer;flex-shrink:0;transition:opacity .15s;white-space:nowrap}
+.pcard-btn.connect{background:var(--amber);color:#000}
+.pcard-btn.connected-btn{background:#1f2a40;color:#6b7280;cursor:default}
+.pcard-btn:hover:not(.connected-btn){opacity:.85}
+
+/* send mode toggle */
+.mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px}
+.mode-btn{background:#1a1d2e;border:1px solid var(--sidebar-border);border-radius:6px;padding:8px 6px;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
+.mode-btn.active{background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber)}
+
+/* stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-card{background:#1a1d2e;border-radius:var(--radius);padding:10px 12px;border:1px solid var(--sidebar-border)}
+.stat-num{font-size:20px;font-weight:600;color:#fff;line-height:1}
+.stat-label{font-size:11px;color:#6b7280;margin-top:3px}
+.stat-card.hot .stat-num{color:var(--amber)}
+
+.sidebar-action{padding:14px 20px}
+.btn-generate{width:100%;background:var(--amber);color:#000;font-weight:600;font-size:13px;border:none;border-radius:var(--radius);padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,transform .1s}
+.btn-generate:hover{background:var(--amber-dim)}.btn-generate:active{transform:scale(.98)}.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-generate .spinner{width:14px;height:14px;border:2px solid #0005;border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-generate.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MAIN ── */
+.main-header{padding:20px 28px 0;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.main-title{font-size:18px;font-weight:600;letter-spacing:-.02em;color:var(--ink);margin-bottom:14px}
+.tabs{display:flex;gap:0}
+.tab{padding:8px 18px;font-size:13px;font-weight:500;color:var(--ink3);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:color .15s,border-color .15s;position:relative;top:1px}
+.tab.active{color:var(--ink);border-bottom-color:var(--amber)}
+.tab:hover:not(.active){color:var(--ink2)}
+.content{flex:1;padding:24px 28px}
+
+/* empty state */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;text-align:center;color:var(--ink3)}
+.empty-icon{font-size:40px;margin-bottom:16px;opacity:.4}
+.empty-title{font-size:16px;font-weight:500;color:var(--ink2);margin-bottom:8px}
+.empty-desc{font-size:13px;line-height:1.6;max-width:320px}
+
+/* batch header */
+.batch-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+.batch-meta{font-size:13px;color:var(--ink2)}
+.batch-meta strong{color:var(--ink);font-weight:600}
+.batch-actions{display:flex;gap:8px;align-items:center}
+.btn-send-all{background:var(--ink);color:#fff;font-weight:600;font-size:13px;border:none;border-radius:var(--radius);padding:9px 18px;display:flex;align-items:center;gap:7px;transition:background .15s,transform .1s}
+.btn-send-all:hover{background:#1f2433}.btn-send-all:active{transform:scale(.98)}.btn-send-all:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--ink2);font-size:12px;font-weight:500;border-radius:var(--radius);padding:7px 14px;transition:all .15s}
+.btn-outline:hover{background:var(--canvas);border-color:#c5c2bb}
+
+/* progress */
+.progress-wrap{background:var(--border);border-radius:4px;height:4px;margin-bottom:20px;overflow:hidden;display:none}
+.progress-bar{height:100%;background:var(--amber);border-radius:4px;transition:width .35s ease;width:0}
+.progress-wrap.active{display:block}
+
+/* send status banner */
+.send-status{display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:13px;color:#15803d;align-items:center;gap:8px}
+.send-status.active{display:flex}
+.send-status.error{background:#fef2f2;border-color:#fecaca;color:#dc2626}
+
+/* lead cards */
+.lead-list{display:flex;flex-direction:column;gap:10px}
+.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;transition:border-color .15s}
+.lead-card:hover{border-color:#d1cfc7}
+.lead-card.sent{opacity:.52}
+.lead-card.sending{border-color:var(--amber);box-shadow:0 0 0 3px #f59e0b1a}
+.lead-card.errored{border-color:#fca5a5}
+.lead-card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--amber);flex-shrink:0;border:1px solid #fde68a}
+.lead-meta{flex:1;min-width:0}
+.lead-name{font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lead-sub{font-size:12px;color:var(--ink3);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.lead-badges{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.badge-hot{background:#dcfce7;color:#15803d}
+.badge-warm{background:#fef3c7;color:#b45309}
+.badge-platform{background:#eff6ff;color:#1d4ed8}
+.badge-wos{background:#f3f4f6;color:#374151}
+.lead-card-status{margin-left:auto;flex-shrink:0}
+.sent-badge{font-size:11px;font-weight:600;color:#16a34a;background:#dcfce7;padding:3px 10px;border-radius:20px}
+.error-badge{font-size:11px;font-weight:600;color:#dc2626;background:#fee2e2;padding:3px 10px;border-radius:20px}
+.sending-badge{font-size:11px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:3px 10px;border-radius:20px}
+
+/* platform row on card */
+.platform-row{display:flex;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+.platform-row label{font-size:11px;color:var(--ink3);margin:0}
+.plat-chip{font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px;border:none;cursor:pointer;transition:all .15s;opacity:.45}
+.plat-chip.active{opacity:1}
+.plat-chip.gmail{background:#fce8e6;color:var(--gmail)}
+.plat-chip.sms{background:#dcfce7;color:#15803d}
+.plat-chip.ig{background:#fce7f3;color:var(--ig)}
+.plat-chip.fb{background:#dbeafe;color:var(--fb)}
+.plat-chip.li{background:#dbeafe;color:var(--li)}
+
+.messages-wrap{display:flex;flex-direction:column;gap:6px}
+.msg-row{display:flex;gap:8px;align-items:flex-start}
+.msg-num{font-size:10px;font-weight:700;color:var(--ink3);width:18px;flex-shrink:0;padding-top:8px;text-align:center}
+.msg-textarea{flex:1;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:Georgia,serif;font-size:13px;line-height:1.65;color:var(--ink);background:var(--canvas);resize:vertical;min-height:70px;outline:none;transition:border-color .15s}
+.msg-textarea:focus{border-color:#a8a499;background:var(--surface)}
+.msg-textarea.short{min-height:42px;font-size:12px;color:var(--ink2)}
+.variation-label{font-size:10px;color:var(--ink3);text-align:right;margin-top:3px}
+
+/* open-tab queue (social) */
+.tab-queue{display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:12px 14px;margin-bottom:16px}
+.tab-queue.active{display:block}
+.tab-queue-title{font-size:12px;font-weight:600;color:#92400e;margin-bottom:8px}
+.tab-queue-list{display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto}
+.tq-item{display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;background:#fff;border-radius:5px;border:1px solid #fde68a}
+.tq-item .tq-name{flex:1;color:var(--ink2)}
+.tq-item .tq-open{font-size:11px;font-weight:600;padding:3px 9px;border-radius:4px;border:none;cursor:pointer;background:var(--amber);color:#000;transition:opacity .15s;white-space:nowrap}
+.tq-item .tq-open:hover{opacity:.85}
+.tq-item .tq-open.done{background:#dcfce7;color:#15803d;cursor:default}
+.tq-open-all{margin-top:8px;font-size:12px;font-weight:600;padding:7px 14px;border-radius:var(--radius);border:none;background:var(--ink);color:#fff;cursor:pointer;width:100%;transition:opacity .15s}
+.tq-open-all:hover{opacity:.85}
+
+/* send log */
+.log-table{width:100%;border-collapse:collapse}
+.log-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:8px 12px;border-bottom:1px solid var(--border)}
+.log-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid #f0ede6;vertical-align:top}
+.log-table tr:hover td{background:#faf9f6}
+.log-time{font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.log-method{font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px}
+.log-method.api{background:#dcfce7;color:#15803d}
+.log-method.tab{background:#fef3c7;color:#92400e}
+.log-method.draft{background:#f3f4f6;color:#374151}
+.log-empty{text-align:center;padding:40px;color:var(--ink3);font-size:13px}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;font-size:13px;font-weight:500;padding:10px 18px;border-radius:var(--radius);box-shadow:0 4px 20px #0003;transform:translateY(20px);opacity:0;transition:all .25s;z-index:1000;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:#15803d}.toast.error{background:#dc2626}
+
+/* gmail setup modal */
+.modal-overlay{position:fixed;inset:0;background:#0009;z-index:500;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:28px;max-width:440px;width:90%;box-shadow:0 20px 60px #0004}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:14px}
+.modal input{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:13px;outline:none;margin-bottom:10px;font-family:inherit}
+.modal input:focus{border-color:var(--amber)}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:8px 18px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s}
+.modal-btns .btn-primary{background:var(--amber);color:#000}
+.modal-btns .btn-secondary{background:var(--canvas);color:var(--ink2);border:1px solid var(--border)}
+.modal-btns button:hover{opacity:.85}
+.step-list{list-style:none;padding:0;margin-bottom:14px}
+.step-list li{font-size:12px;color:var(--ink2);padding:4px 0;padding-left:18px;position:relative;line-height:1.5}
+.step-list li::before{content:'→';position:absolute;left:0;color:var(--amber)}
+
+/* url manager */
+.url-row{display:flex;flex-direction:column;gap:3px;background:#1a1d2e;border:1px solid var(--sidebar-border);border-radius:6px;padding:8px 10px;transition:border-color .15s}
+.url-row.has-url{border-color:#1a4731}
+.url-row.missing{border-color:#3d1c1c}
+.url-row-top{display:flex;align-items:center;gap:7px}
+.url-row-name{font-size:12px;font-weight:500;color:#c9d1dc;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.url-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.url-dot.set{background:#22c55e}.url-dot.unset{background:#4b5563}
+.url-input{width:100%;background:#111420;border:1px solid var(--sidebar-border);border-radius:4px;color:#e2e8f0;font-size:11px;padding:5px 8px;font-family:ui-monospace,monospace;outline:none;transition:border-color .15s}
+.url-input:focus{border-color:#6366f1}
+.url-input.set{border-color:#1a4731;color:#86efac}
+.url-row-cat{font-size:10px;color:#4b5563}
+/* missing-url warning on lead card */
+.url-missing-banner{background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:12px;color:#dc2626;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+@media(max-width:700px){.sidebar{width:240px}.content{padding:16px}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">Outreach<span>·</span>AM</div>
+    <div class="sidebar-sub">Morning run — manual trigger</div>
+  </div>
+
+  <!-- Config -->
+  <div class="s-section">
+    <div class="s-title">Config</div>
+    <label>Anthropic API Key</label>
+    <input type="password" id="cfg-apikey" placeholder="sk-ant-…" autocomplete="off">
+    <label>Your name</label>
+    <input type="text" id="cfg-name" placeholder="e.g. Liya">
+    <label>Calendly link</label>
+    <input type="text" id="cfg-calendly" value="https://calendly.com/liyagoni84/30min">
+    <label>Leads per batch</label>
+    <input type="number" id="cfg-batch" value="25" min="5" max="50">
+  </div>
+
+  <!-- Preview URLs -->
+  <div class="s-section">
+    <div class="s-title">Preview URLs</div>
+    <div class="hint" style="margin-bottom:10px;color:#9ca3af">Each lead needs their built site URL before outreach can be generated. Paste the Netlify/hosted URL per lead below.</div>
+    <div id="url-manager-wrap">
+      <div class="url-mgr-search-wrap">
+        <input type="text" id="url-search" placeholder="Search lead…" oninput="renderUrlManager()" style="margin-bottom:8px">
+      </div>
+      <div id="url-list" style="display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto"></div>
+    </div>
+    <div class="url-mgr-stats" id="url-stats" style="margin-top:8px;font-size:11px;color:#6b7280"></div>
+  </div>
+
+  <!-- Platforms -->
+  <div class="s-section">
+    <div class="s-title">Connected platforms</div>
+    <div class="platform-cards">
+
+      <div class="pcard" id="pcard-gmail">
+        <div class="pcard-icon gmail">G</div>
+        <div class="pcard-meta">
+          <div class="pcard-name">Gmail</div>
+          <div class="pcard-status" id="gmail-status">Not connected</div>
+        </div>
+        <button class="pcard-btn connect" id="gmail-btn" onclick="connectGmail()">Connect</button>
+      </div>
+
+      <div class="pcard" id="pcard-sms">
+        <div class="pcard-icon sms">📱</div>
+        <div class="pcard-meta">
+          <div class="pcard-name">SMS via Twilio</div>
+          <div class="pcard-status" id="sms-status">Not configured</div>
+        </div>
+        <button class="pcard-btn connect" id="sms-btn" onclick="openSmsModal()">Configure</button>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-icon ig">IG</div>
+        <div class="pcard-meta">
+          <div class="pcard-name">Instagram</div>
+          <div class="pcard-status limited">Opens pre-filled DM tab</div>
+        </div>
+        <button class="pcard-btn connected-btn">Ready</button>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-icon fb">f</div>
+        <div class="pcard-meta">
+          <div class="pcard-name">Facebook</div>
+          <div class="pcard-status limited">Opens pre-filled DM tab</div>
+        </div>
+        <button class="pcard-btn connected-btn">Ready</button>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-icon li">in</div>
+        <div class="pcard-meta">
+          <div class="pcard-name">LinkedIn</div>
+          <div class="pcard-status limited">Opens compose tab</div>
+        </div>
+        <button class="pcard-btn connected-btn">Ready</button>
+      </div>
+
+    </div>
+    <div class="hint" style="margin-top:8px">Meta & LinkedIn APIs block cold DMs. Instagram / Facebook / LinkedIn open a pre-filled tab per lead — you click send. Gmail & SMS fire silently in batch.</div>
+  </div>
+
+  <!-- Send mode -->
+  <div class="s-section">
+    <div class="s-title">Send mode</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-auto" onclick="setMode('auto')">Auto-send<br><span style="font-weight:400;font-size:10px">Gmail + SMS fire silently</span></button>
+      <button class="mode-btn" id="mode-draft" onclick="setMode('draft')">Draft mode<br><span style="font-weight:400;font-size:10px">Copy only, no sends</span></button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="s-section">
+    <div class="s-title">Today's pipeline</div>
+    <div class="stats-grid">
+      <div class="stat-card hot"><div class="stat-num" id="stat-ready">—</div><div class="stat-label">ready</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-sent">—</div><div class="stat-label">sent all-time</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">total leads</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-hot">—</div><div class="stat-label">hot (≥70)</div></div>
+    </div>
+  </div>
+
+  <div class="sidebar-action">
+    <button class="btn-generate" id="btn-generate" onclick="generateBatch()">
+      <div class="spinner"></div>
+      <span class="btn-label">Generate preview</span>
+    </button>
+    <p class="hint" style="margin-top:8px">AI writes personalised messages. Review before sending.</p>
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<main class="main">
+  <div class="main-header">
+    <div class="main-title" id="main-title">Morning Outreach Run</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('preview')" id="tab-preview">Preview &amp; Edit</button>
+      <button class="tab" onclick="switchTab('log')" id="tab-log">Sent log</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW TAB -->
+  <div class="content" id="content-preview">
+    <div id="empty-state" class="empty-state">
+      <div class="empty-icon">✦</div>
+      <div class="empty-title">Ready when you are</div>
+      <div class="empty-desc">Connect your platforms in the sidebar, then click "Generate preview" to draft today's batch.</div>
+    </div>
+
+    <div id="batch-ui" style="display:none">
+      <div class="batch-bar">
+        <div class="batch-meta"><strong id="batch-count">0</strong> messages ready — review before sending</div>
+        <div class="batch-actions">
+          <button class="btn-outline" onclick="copyAllToClipboard()">Copy all</button>
+          <button class="btn-send-all" id="btn-send-all" onclick="sendAll()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send all
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-wrap" id="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+      <div class="send-status" id="send-status"></div>
+
+      <!-- Social tab queue -->
+      <div class="tab-queue" id="tab-queue">
+        <div class="tab-queue-title">📬 Social DMs — open each tab and hit send</div>
+        <div class="tab-queue-list" id="tq-list"></div>
+        <button class="tq-open-all" onclick="openAllTabs()">Open all remaining tabs</button>
+      </div>
+
+      <div class="lead-list" id="lead-list"></div>
+    </div>
+  </div>
+
+  <!-- LOG TAB -->
+  <div class="content" id="content-log" style="display:none">
+    <div id="log-container"></div>
+  </div>
+</main>
+</div>
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- Gmail setup -->
+<div class="modal-overlay" id="modal-gmail">
+  <div class="modal">
+    <h3>Connect Gmail</h3>
+    <p>Enter your Gmail Client ID to enable sending. You'll need to create a Google Cloud project with the Gmail API enabled.</p>
+    <ul class="step-list">
+      <li>Go to console.cloud.google.com → New project</li>
+      <li>Enable Gmail API → Create OAuth credentials</li>
+      <li>Add your domain/localhost as authorised origin</li>
+      <li>Copy the Client ID and paste below</li>
+    </ul>
+    <input type="text" id="gmail-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal('modal-gmail')">Cancel</button>
+      <button class="btn-primary" onclick="saveGmailClientId()">Save &amp; authorise</button>
+    </div>
+  </div>
+</div>
+
+<!-- SMS / Twilio setup -->
+<div class="modal-overlay" id="modal-sms">
+  <div class="modal">
+    <h3>Configure SMS via Twilio</h3>
+    <p>Twilio sends real SMS messages. Create a free account at twilio.com, buy a number (~$1/mo), and paste your credentials below.</p>
+    <ul class="step-list">
+      <li>Sign up at twilio.com → get Account SID + Auth Token</li>
+      <li>Buy a phone number to send from</li>
+      <li>Paste all three below — stored locally only</li>
+    </ul>
+    <input type="text" id="twilio-sid" placeholder="Account SID (ACxxxxxxxx…)">
+    <input type="password" id="twilio-token" placeholder="Auth Token">
+    <input type="text" id="twilio-from" placeholder="Your Twilio number  e.g. +19185550100">
+    <div class="hint" style="margin-bottom:10px">SMS sends through a local proxy because browsers block direct Twilio calls. See the README below for the one-command proxy setup.</div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal('modal-sms')">Cancel</button>
+      <button class="btn-primary" onclick="saveTwilioConfig()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  LEADS (baked in)
+// ═══════════════════════════════════════════════════════════════
+const LEADS = [
+  {id:1,name:"Rodriguez HVAC & Air",cat:"HVAC Contractor",city:"Tulsa, OK",phone:"(918) 555-0142",url:"http://rodriguezac.com",platform:"WordPress",issues:"No SSL; 2017 copyright; no mobile",reviews:67,rating:4.4,wos:88,priority:"Hot",instagram:"@rodriguezac",facebook:"RodriguezHVACOK",linkedin:"",email:"info@rodriguezac.com",notes:"Family owned since 2003"},
+  {id:2,name:"Patel & Sons Roofing",cat:"Roofer",city:"Oklahoma City, OK",phone:"(405) 555-0198",url:"None",platform:"None",issues:"No website — Facebook only",reviews:22,rating:4.8,wos:94,priority:"Hot",instagram:"@patelsonsroofing",facebook:"PatelSonsRoofing",linkedin:"",email:"patelsonsroofing@gmail.com",notes:"Very active on FB"},
+  {id:3,name:"Sunrise Dental Studio",cat:"Dentist",city:"Tulsa, OK",phone:"(918) 555-0317",url:"http://sunrisedentalok.com",platform:"Unknown",issues:"No SSL; last post 2019; slow load",reviews:88,rating:4.6,wos:83,priority:"Hot",instagram:"@sunrisedentalok",facebook:"SunriseDentalStudio",linkedin:"in/sunrisedentalok",email:"contact@sunrisedentalok.com",notes:"Accepts new patients"},
+  {id:4,name:"Gable Plumbing Services",cat:"Plumber",city:"Broken Arrow, OK",phone:"(918) 555-0284",url:"None",platform:"None",issues:"No website found",reviews:14,rating:4.9,wos:88,priority:"Hot",instagram:"@gableplumbing",facebook:"GablePlumbingOK",linkedin:"",email:"gableplumbing@gmail.com",notes:"Google Business only"},
+  {id:5,name:"Metro Pest Solutions",cat:"Pest Control",city:"Tulsa, OK",phone:"(918) 555-0453",url:"https://metropesttulsa.wixsite.com/home",platform:"Wix (free)",issues:"Free Wix subdomain; no custom domain",reviews:31,rating:4.3,wos:78,priority:"Hot",instagram:"@metropest",facebook:"MetroPestSolutions",linkedin:"",email:"metropest@gmail.com",notes:""},
+  {id:6,name:"Oak & Stone Landscaping",cat:"Landscaping",city:"Edmond, OK",phone:"(405) 555-0177",url:"http://oakstonelandscape.com",platform:"WordPress",issues:"No SSL; 2018 copyright; no booking",reviews:19,rating:4.7,wos:77,priority:"Hot",instagram:"@oakstonelandscape",facebook:"OakStoneLandscaping",linkedin:"",email:"oakstonelandscape@gmail.com",notes:"Residential & commercial"},
+  {id:7,name:"Bright Smile Orthodontics",cat:"Orthodontist",city:"Tulsa, OK",phone:"(918) 555-0229",url:"https://brightsmileortho.com",platform:"Squarespace",issues:"Decent but no online booking",reviews:54,rating:4.5,wos:68,priority:"Warm",instagram:"@brightsmileortho",facebook:"BrightSmileOrtho",linkedin:"in/brightsmileortho",email:"info@brightsmileortho.com",notes:"Two locations"},
+  {id:8,name:"Golden Hour Photography",cat:"Wedding Photographer",city:"Tulsa, OK",phone:"(918) 555-0512",url:"https://goldenhourimages.weebly.com",platform:"Weebly",issues:"Free Weebly; outdated portfolio",reviews:27,rating:5.0,wos:84,priority:"Hot",instagram:"@goldenhourimages",facebook:"GoldenHourPhotographyTulsa",linkedin:"",email:"goldenhourimages@gmail.com",notes:"Booked 18 months ahead"},
+  {id:9,name:"Sanchez Family Law",cat:"Family Lawyer",city:"Tulsa, OK",phone:"(918) 555-0088",url:"http://sanchezlawok.com",platform:"Unknown",issues:"No SSL; no mobile; 2016 design",reviews:42,rating:4.6,wos:93,priority:"Hot",instagram:"",facebook:"SanchezFamilyLaw",linkedin:"in/sanchezfamilylaw",email:"info@sanchezlawok.com",notes:"Divorce specialist"},
+  {id:10,name:"Northside Electricians",cat:"Electrician",city:"Owasso, OK",phone:"(918) 555-0634",url:"None",platform:"None",issues:"No website",reviews:11,rating:4.8,wos:90,priority:"Hot",instagram:"@northsideelectric",facebook:"NorthsideElectriciansOK",linkedin:"",email:"northsideelectricians@gmail.com",notes:"Licensed & bonded"},
+  {id:11,name:"Meadows Chiropractic",cat:"Chiropractor",city:"Broken Arrow, OK",phone:"(918) 555-0721",url:"https://meadowschiro.wixsite.com/home",platform:"Wix (free)",issues:"Free Wix; generic template",reviews:38,rating:4.4,wos:78,priority:"Hot",instagram:"@meadowschiro",facebook:"MeadowsChiropractic",linkedin:"",email:"meadowschiro@gmail.com",notes:""},
+  {id:12,name:"K9 Academy Dog Training",cat:"Dog Trainer",city:"Tulsa, OK",phone:"(918) 555-0843",url:"None",platform:"None",issues:"No website — Instagram only",reviews:63,rating:4.9,wos:92,priority:"Hot",instagram:"@k9academytulsa",facebook:"K9AcademyTulsa",linkedin:"",email:"k9academy.tulsa@gmail.com",notes:"Popular on Instagram"},
+  {id:13,name:"Radiant Skin Medspa",cat:"Medspa",city:"Tulsa, OK",phone:"(918) 555-0298",url:"None",platform:"None",issues:"No website at all",reviews:24,rating:4.8,wos:94,priority:"Hot",instagram:"@radiantskintulsa",facebook:"RadiantSkinMedspa",linkedin:"",email:"radiantskin.tulsa@gmail.com",notes:"High-end clientele"},
+  {id:14,name:"Clark CPA & Tax",cat:"CPA / Tax Preparer",city:"Tulsa, OK",phone:"(918) 555-0556",url:"https://clarkcpatulsa.com",platform:"WordPress",issues:"Outdated; no appointment booking",reviews:74,rating:4.7,wos:70,priority:"Hot",instagram:"",facebook:"ClarkCPATulsa",linkedin:"in/clarkcpatulsa",email:"info@clarkcpatulsa.com",notes:"Business & personal"},
+  {id:15,name:"Prestige Auto Detail",cat:"Auto Detailing",city:"Oklahoma City, OK",phone:"(405) 555-0619",url:"https://prestigedetailok.wixsite.com",platform:"Wix (free)",issues:"Free Wix subdomain",reviews:44,rating:4.6,wos:78,priority:"Hot",instagram:"@prestigedetailokc",facebook:"PrestigeAutoDetailOKC",linkedin:"",email:"prestigedetail.ok@gmail.com",notes:"Mobile detailing too"},
+  {id:16,name:"Harmony Yoga & Pilates",cat:"Yoga Studio",city:"Tulsa, OK",phone:"(918) 555-0732",url:"None",platform:"None",issues:"No website — only Facebook",reviews:29,rating:4.9,wos:88,priority:"Hot",instagram:"@harmonyyogatulsa",facebook:"HarmonyYogaTulsa",linkedin:"",email:"harmony.yoga.tulsa@gmail.com",notes:"Classes fill up fast"},
+  {id:17,name:"Tulsa Tattoo Collective",cat:"Tattoo Studio",city:"Tulsa, OK",phone:"(918) 555-0117",url:"None",platform:"None",issues:"No website — Instagram portfolio",reviews:82,rating:5.0,wos:92,priority:"Hot",instagram:"@tulsatattoocollective",facebook:"TulsaTattooCollective",linkedin:"",email:"tulsatattoocollective@gmail.com",notes:"Award-winning artists"},
+  {id:18,name:"Bliss Massage & Wellness",cat:"Massage Therapy",city:"Tulsa, OK",phone:"(918) 555-0531",url:"None",platform:"None",issues:"No website — Booksy profile only",reviews:56,rating:4.9,wos:92,priority:"Hot",instagram:"@blissmassagetulsa",facebook:"BlissMassageTulsa",linkedin:"",email:"blissmassage.tulsa@gmail.com",notes:"6 therapists on staff"},
+  {id:19,name:"Luxe Lash & Brow Studio",cat:"Esthetics Studio",city:"Tulsa, OK",phone:"(918) 555-1084",url:"None",platform:"None",issues:"No website — Booksy only",reviews:88,rating:5.0,wos:92,priority:"Hot",instagram:"@luxelashtulsa",facebook:"LuxeLashTulsa",linkedin:"",email:"luxelash.tulsa@gmail.com",notes:"Fully booked 3 months out"},
+  {id:20,name:"Mindful Therapy Group",cat:"Mental Health",city:"Tulsa, OK",phone:"(918) 555-1169",url:"None",platform:"None",issues:"No website — Psychology Today only",reviews:19,rating:4.9,wos:92,priority:"Hot",instagram:"@mindfultherapyok",facebook:"MindfulTherapyGroup",linkedin:"in/mindfultherapyok",email:"hello@mindfultherapyok.com",notes:"3 licensed therapists"},
+  {id:21,name:"Inkwell Tattoo Studio",cat:"Tattoo Studio",city:"Tulsa, OK",phone:"(918) 555-1308",url:"None",platform:"None",issues:"No website — Instagram portfolio",reviews:74,rating:5.0,wos:92,priority:"Hot",instagram:"@inkwelltattoo",facebook:"InkwellTattooTulsa",linkedin:"",email:"inkwelltattootulsa@gmail.com",notes:"3 resident artists"},
+  {id:22,name:"Aria Wedding & Events",cat:"Event Planner",city:"Tulsa, OK",phone:"(918) 555-1447",url:"None",platform:"None",issues:"No website — Instagram portfolio",reviews:66,rating:5.0,wos:98,priority:"Hot",instagram:"@ariaweddingevents",facebook:"AriaWeddingEvents",linkedin:"in/ariaweddingevents",email:"hello@ariaweddingevents.com",notes:"Full-service planning"},
+  {id:23,name:"Dr. Park Optometry",cat:"Optometrist",city:"Broken Arrow, OK",phone:"(918) 555-0263",url:"http://drparkoptometry.com",platform:"Unknown",issues:"No SSL; no booking; 2017 design",reviews:61,rating:4.5,wos:93,priority:"Hot",instagram:"@drparkoptometry",facebook:"DrParkOptometry",linkedin:"",email:"info@drparkoptometry.com",notes:"Frames boutique on site"},
+  {id:24,name:"Dermology Skin Clinic",cat:"Dermatologist",city:"Tulsa, OK",phone:"(918) 555-0174",url:"https://dermologytulsa.com",platform:"WordPress",issues:"Outdated; no booking; 2019",reviews:71,rating:4.6,wos:74,priority:"Hot",instagram:"@dermologytulsa",facebook:"DermologySkinClinic",linkedin:"in/dermologytulsa",email:"appointments@dermologytulsa.com",notes:"Private practice"},
+  {id:25,name:"Crestwood Dermatology",cat:"Dermatologist",city:"Tulsa, OK",phone:"(918) 555-1489",url:"https://crestwoodderm.squarespace.com",platform:"Squarespace",issues:"Outdated; no appointment portal",reviews:58,rating:4.7,wos:74,priority:"Hot",instagram:"@crestwoodderm",facebook:"CrestwoodDermatology",linkedin:"in/crestwoodderm",email:"appointments@crestwoodderm.com",notes:"Medical + cosmetic"},
+  {id:26,name:"Cornerstone HVAC",cat:"HVAC Contractor",city:"Jenks, OK",phone:"(918) 555-1001",url:"None",platform:"None",issues:"No website",reviews:5,rating:4.9,wos:84,priority:"Hot",instagram:"@cornerstonehvacok",facebook:"CornerstoneHVACOK",linkedin:"",email:"info@cornerstonehvac.com",notes:"New but highly rated"},
+  {id:27,name:"Blue Sky Plumbing",cat:"Plumber",city:"Tulsa, OK",phone:"(918) 555-1022",url:"http://blueskypluming.net",platform:"WordPress",issues:"No SSL; 2016 design; slow",reviews:41,rating:4.7,wos:92,priority:"Hot",instagram:"@blueskyplumbing",facebook:"BlueskyPlumbingTulsa",linkedin:"",email:"blueskyplumbing@gmail.com",notes:"24hr emergency service"},
+  {id:28,name:"Halo Dental Care",cat:"Dentist",city:"Tulsa, OK",phone:"(918) 555-1045",url:"https://halodental.wixsite.com/main",platform:"Wix (free)",issues:"Free Wix; no booking system",reviews:62,rating:4.8,wos:82,priority:"Hot",instagram:"@halodentaltulsa",facebook:"HaloDentalCare",linkedin:"",email:"contact@halodental.com",notes:"Cosmetic + general"},
+  {id:29,name:"Oasis Massage Spa",cat:"Massage Therapy",city:"Oklahoma City, OK",phone:"(405) 555-1183",url:"https://oasismassage.wixsite.com",platform:"Wix (free)",issues:"Free Wix; slow; no scheduling",reviews:44,rating:4.7,wos:78,priority:"Hot",instagram:"@oasismassageokc",facebook:"OasisMassageSpa",linkedin:"",email:"oasismassageokc@gmail.com",notes:"Couples & deep tissue"},
+  {id:30,name:"Peak Performance Training",cat:"Personal Trainer",city:"Tulsa, OK",phone:"(918) 555-1342",url:"https://peakperformance.weebly.com",platform:"Weebly",issues:"Free Weebly; no booking; outdated",reviews:53,rating:4.9,wos:82,priority:"Hot",instagram:"@peakperformanceok",facebook:"PeakPerformanceTraining",linkedin:"",email:"peakperformance.ok@gmail.com",notes:"Online + in-person"},
+  {id:31,name:"Lush Lawn & Landscape",cat:"Landscaping",city:"Broken Arrow, OK",phone:"(918) 555-1247",url:"http://lushlawnok.com",platform:"Unknown",issues:"No SSL; no contact form; 2020",reviews:22,rating:4.7,wos:72,priority:"Hot",instagram:"@lushlawnok",facebook:"LushLawnLandscape",linkedin:"",email:"lushlawn.ok@gmail.com",notes:"Design + maintenance"},
+  {id:32,name:"Bolt Electric Services",cat:"Electrician",city:"Yukon, OK",phone:"(405) 555-1381",url:"None",platform:"None",issues:"No website",reviews:4,rating:5.0,wos:84,priority:"Hot",instagram:"@boltelectricok",facebook:"BoltElectricServices",linkedin:"",email:"boltelectricok@gmail.com",notes:"Brand new; 5-star rated"},
+  {id:33,name:"River City Junk Removal",cat:"Junk Removal",city:"Oklahoma City, OK",phone:"(405) 555-0957",url:"None",platform:"None",issues:"No website",reviews:9,rating:4.8,wos:82,priority:"Hot",instagram:"@rivercityjunk",facebook:"RiverCityJunkRemoval",linkedin:"",email:"rivercityjunkremoval@gmail.com",notes:"Same-day service"},
+  {id:34,name:"NextStep Financial Advisors",cat:"Financial Advisor",city:"Tulsa, OK",phone:"(918) 555-0841",url:"http://nextstepfinancialok.com",platform:"Unknown",issues:"No SSL; no client portal; 2016",reviews:48,rating:4.5,wos:93,priority:"Hot",instagram:"",facebook:"NextStepFinancial",linkedin:"in/nextstepfinancial",email:"info@nextstepfinancialok.com",notes:"Retirement planning"},
+  {id:35,name:"Willow Creek Catering",cat:"Caterer",city:"Edmond, OK",phone:"(405) 555-0811",url:"http://willowcreekcatering.com",platform:"Unknown",issues:"No SSL; no gallery; 2018 copyright",reviews:12,rating:4.7,wos:73,priority:"Hot",instagram:"@willowcreekcatering",facebook:"WillowCreekCatering",linkedin:"",email:"willowcreek.catering@gmail.com",notes:"Corporate + weddings"},
+  {id:36,name:"Garden District Florist",cat:"Florist",city:"Edmond, OK",phone:"(405) 555-0728",url:"https://gardendistrict.wixsite.com",platform:"Wix (free)",issues:"Free Wix; no online ordering",reviews:37,rating:4.7,wos:78,priority:"Hot",instagram:"@gardendistrict",facebook:"GardenDistrictFlorist",linkedin:"",email:"gardendistrict.florist@gmail.com",notes:"Wedding specialist"},
+  {id:37,name:"Fusion Dance Academy",cat:"Dance Studio",city:"Tulsa, OK",phone:"(918) 555-0683",url:"None",platform:"None",issues:"No website",reviews:34,rating:4.8,wos:88,priority:"Hot",instagram:"@fusiondancetulsa",facebook:"FusionDanceAcademy",linkedin:"",email:"fusion.dance.tulsa@gmail.com",notes:"Ballet, hip-hop, jazz"},
+  {id:38,name:"Rivera Interior Design",cat:"Interior Designer",city:"Tulsa, OK",phone:"(918) 555-0389",url:"https://riveradesignstulsa.com",platform:"Squarespace",issues:"Outdated portfolio; no contact form",reviews:47,rating:4.8,wos:72,priority:"Hot",instagram:"@riveradesigns",facebook:"RiveraInteriorDesign",linkedin:"in/riveradesigns",email:"hello@riveradesignstulsa.com",notes:"High-end residential"},
+  {id:39,name:"Keystone Roofing & Gutters",cat:"Roofer",city:"Edmond, OK",phone:"(405) 555-0415",url:"http://keystoneroofingok.com",platform:"WordPress",issues:"No SSL; 2019 copyright",reviews:39,rating:4.4,wos:87,priority:"Hot",instagram:"@keystoneroofing",facebook:"KeystoneRoofingGutters",linkedin:"",email:"keystoneroofing@gmail.com",notes:"Insurance claims specialist"},
+  {id:40,name:"Ironworks Martial Arts",cat:"Martial Arts School",city:"Oklahoma City, OK",phone:"(405) 555-0648",url:"http://ironworksmartialarts.com",platform:"Unknown",issues:"No SSL; no class schedule; 2017",reviews:33,rating:4.6,wos:73,priority:"Hot",instagram:"@ironworksmartialarts",facebook:"IronworksMartialArts",linkedin:"",email:"ironworksmartialarts@gmail.com",notes:"BJJ & Muay Thai"},
+  {id:41,name:"Green Valley Lawn Care",cat:"Landscaping",city:"Owasso, OK",phone:"(918) 555-0931",url:"None",platform:"None",issues:"No website",reviews:7,rating:4.6,wos:78,priority:"Hot",instagram:"@greenvalleylawn",facebook:"GreenValleyLawnCare",linkedin:"",email:"greenvalley.lawn@gmail.com",notes:"Residential mowing"},
+  {id:42,name:"ProClean Commercial",cat:"Commercial Cleaning",city:"Oklahoma City, OK",phone:"(405) 555-0596",url:"None",platform:"None",issues:"No website",reviews:11,rating:4.6,wos:90,priority:"Hot",instagram:"@procleanokc",facebook:"ProCleanCommercial",linkedin:"",email:"proclean.okc@gmail.com",notes:"Bonded & insured"},
+  {id:43,name:"Miller Property Management",cat:"Property Manager",city:"Oklahoma City, OK",phone:"(405) 555-0577",url:"http://millerpropok.com",platform:"WordPress",issues:"No SSL; last blog 2018",reviews:18,rating:4.3,wos:73,priority:"Hot",instagram:"",facebook:"MillerPropertyMgmt",linkedin:"in/millerproperty",email:"info@millerpropok.com",notes:"50+ units under mgmt"},
+  {id:44,name:"Pinnacle Home Inspections",cat:"Home Inspector",city:"Oklahoma City, OK",phone:"(405) 555-0234",url:"https://pinnaclehomeinspect.wixsite.com",platform:"Wix (free)",issues:"Free Wix; no sample reports",reviews:43,rating:4.7,wos:78,priority:"Hot",instagram:"@pinnacleinspect",facebook:"PinnacleHomeInspections",linkedin:"",email:"pinnaclehomeinspect@gmail.com",notes:"Certified ASHI"},
+  {id:45,name:"Elite DJ Entertainment",cat:"DJ Service",city:"Oklahoma City, OK",phone:"(405) 555-0156",url:"http://elitedjok.net",platform:"Unknown",issues:"No SSL; Flash-era design; 2014",reviews:28,rating:4.3,wos:83,priority:"Hot",instagram:"@elitedjokc",facebook:"EliteDJEntertainment",linkedin:"",email:"elitedjokc@gmail.com",notes:"Weddings & corporate"},
+  {id:46,name:"Luxe Beauty Bar",cat:"Hair Salon",city:"Tulsa, OK",phone:"(918) 555-0472",url:"https://luxebeautybar.squarespace.com",platform:"Squarespace",issues:"Outdated; trial watermark visible",reviews:59,rating:4.8,wos:82,priority:"Hot",instagram:"@luxebeautybartulsa",facebook:"LuxeBeautyBarTulsa",linkedin:"",email:"info@luxebeautybartulsa.com",notes:"Color specialist"},
+  {id:47,name:"Precision Auto Glass",cat:"Auto Glass Shop",city:"Tulsa, OK",phone:"(918) 555-1222",url:"None",platform:"None",issues:"No website",reviews:8,rating:4.8,wos:82,priority:"Hot",instagram:"@precisionautoglass",facebook:"PrecisionAutoGlassTulsa",linkedin:"",email:"precisionautoglass@gmail.com",notes:"Mobile & in-shop"},
+  {id:48,name:"Clearview Window Cleaning",cat:"Window Cleaning",city:"Oklahoma City, OK",phone:"(405) 555-0128",url:"None",platform:"None",issues:"No website",reviews:9,rating:4.8,wos:78,priority:"Hot",instagram:"@clearviewwindows",facebook:"ClearviewWindowCleaning",linkedin:"",email:"clearviewwindows@gmail.com",notes:"Commercial bids"},
+  {id:49,name:"Cedar Ridge Roofing",cat:"Roofer",city:"Edmond, OK",phone:"(405) 555-1148",url:"http://cedarridgeroofok.com",platform:"Unknown",issues:"No SSL; 2019 copyright",reviews:33,rating:4.4,wos:87,priority:"Hot",instagram:"@cedarridgeroofing",facebook:"CedarRidgeRoofingOK",linkedin:"",email:"cedarridgeroofing@gmail.com",notes:"Insurance specialist"},
+  {id:50,name:"Summit Solar",cat:"Solar Installer",city:"Owasso, OK",phone:"(918) 555-1063",url:"None",platform:"None",issues:"No website",reviews:7,rating:4.8,wos:88,priority:"Hot",instagram:"@summitsolarok",facebook:"SummitSolarOK",linkedin:"",email:"summit.solar.ok@gmail.com",notes:"3-person crew"},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+const SENT_KEY      = 'outreach_sent_v3';
+const CFG_KEY       = 'outreach_cfg_v3';
+const CREDS_KEY     = 'outreach_creds_v1';
+const PREVIEW_KEY   = 'outreach_preview_urls_v1'; // leadId → preview URL
+
+let sentLog      = [];
+let batch        = [];
+let isSending    = false;
+let sendMode     = 'auto';  // 'auto' | 'draft'
+let gmailToken   = null;    // OAuth access token
+let tabQueue     = [];      // social leads queued for tab opening
+
+// ═══════════════════════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════════════════════
+const ls = {
+  get:(k,d={})=>{ try{return JSON.parse(localStorage.getItem(k))||d}catch{return d} },
+  set:(k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v))}catch{} }
+};
+function getSentIds(){ return new Set(sentLog.map(r=>r.leadId)); }
+function saveSentLog(){ ls.set(SENT_KEY, sentLog); }
+
+// ═══════════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════════
+function saveConfig(){
+  ls.set(CFG_KEY,{
+    apikey:   g('cfg-apikey').value,
+    name:     g('cfg-name').value,
+    calendly: g('cfg-calendly').value,
+    batch:    g('cfg-batch').value,
+  });
+}
+function applyConfig(){
+  const c = ls.get(CFG_KEY);
+  if(c.apikey)   g('cfg-apikey').value   = c.apikey;
+  if(c.name)     g('cfg-name').value     = c.name;
+  if(c.calendly) g('cfg-calendly').value = c.calendly;
+  if(c.batch)    g('cfg-batch').value    = c.batch;
+
+  // Restore creds
+  const creds = ls.get(CREDS_KEY);
+  if(creds.gmailClientId) g('gmail-client-id').value = creds.gmailClientId;
+  if(creds.twilioSid)   g('twilio-sid').value   = creds.twilioSid;
+  if(creds.twilioToken) g('twilio-token').value = creds.twilioToken;
+  if(creds.twilioFrom)  g('twilio-from').value  = creds.twilioFrom;
+
+  if(creds.twilioSid && creds.twilioToken && creds.twilioFrom) setSmsStatus(true);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PREVIEW URL MANAGER
+// ═══════════════════════════════════════════════════════════════
+function getPreviewUrls(){ return ls.get(PREVIEW_KEY, {}); }
+function savePreviewUrl(leadId, url){
+  const urls = getPreviewUrls();
+  if(url) urls[leadId] = url.trim();
+  else delete urls[leadId];
+  ls.set(PREVIEW_KEY, urls);
+  renderUrlManager();
+  updateStats();
+}
+function getPreviewUrl(leadId){
+  return getPreviewUrls()[leadId] || null;
+}
+
+function renderUrlManager(){
+  const urls  = getPreviewUrls();
+  const q     = (g('url-search')?.value || '').toLowerCase();
+  const leads = LEADS.filter(l => !q || l.name.toLowerCase().includes(q) || l.cat.toLowerCase().includes(q));
+  const set   = Object.keys(urls).length;
+
+  g('url-list').innerHTML = leads.map(l => {
+    const val = urls[l.id] || '';
+    const hasUrl = !!val;
+    return `<div class="url-row ${hasUrl?'has-url':'missing'}">
+      <div class="url-row-top">
+        <div class="url-dot ${hasUrl?'set':'unset'}"></div>
+        <div class="url-row-name" title="${l.name}">${l.name}</div>
+        <div class="url-row-cat">${l.cat.split(' ')[0]}</div>
+      </div>
+      <input class="url-input ${hasUrl?'set':''}" type="url"
+        placeholder="https://your-site.netlify.app"
+        value="${esc(val)}"
+        data-id="${l.id}"
+        oninput="onUrlInput(this)"
+        onblur="onUrlBlur(this)">
+    </div>`;
+  }).join('');
+
+  g('url-stats').textContent = `${set} of ${LEADS.length} sites linked`;
+}
+
+function onUrlInput(el){
+  // Live-style the input
+  el.classList.toggle('set', el.value.trim().length > 0);
+  el.closest('.url-row').classList.toggle('has-url', el.value.trim().length > 0);
+  el.closest('.url-row').classList.toggle('missing', el.value.trim().length === 0);
+}
+
+function onUrlBlur(el){
+  const id  = parseInt(el.dataset.id);
+  const val = el.value.trim();
+  savePreviewUrl(id, val);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PLATFORM CONNECTIONS
+// ═══════════════════════════════════════════════════════════════
+
+// — Gmail OAuth —
+function connectGmail(){ openModal('modal-gmail'); }
+
+function saveGmailClientId(){
+  const clientId = g('gmail-client-id').value.trim();
+  if(!clientId){ showToast('Paste your Client ID','error'); return; }
+  const creds = ls.get(CREDS_KEY);
+  creds.gmailClientId = clientId;
+  ls.set(CREDS_KEY, creds);
+  closeModal('modal-gmail');
+  initGoogleSignIn(clientId);
+}
+
+function initGoogleSignIn(clientId){
+  if(!window.google){ showToast('Google script not loaded — check internet connection','error'); return; }
+  google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/gmail.send',
+    callback: (resp) => {
+      if(resp.error){ showToast('Gmail auth failed: '+resp.error,'error'); return; }
+      gmailToken = resp.access_token;
+      setGmailStatus(true);
+      showToast('Gmail connected — emails will send automatically','success');
+    }
+  }).requestAccessToken();
+}
+
+function setGmailStatus(ok){
+  g('gmail-status').textContent = ok ? 'Connected — sends automatically' : 'Not connected';
+  g('gmail-status').className   = 'pcard-status' + (ok?' connected':'');
+  g('gmail-btn').textContent    = ok ? 'Reconnect' : 'Connect';
+  g('gmail-btn').className      = ok ? 'pcard-btn connect' : 'pcard-btn connect';
+}
+
+// — Twilio SMS —
+function openSmsModal(){ openModal('modal-sms'); }
+
+function saveTwilioConfig(){
+  const sid   = g('twilio-sid').value.trim();
+  const token = g('twilio-token').value.trim();
+  const from  = g('twilio-from').value.trim();
+  if(!sid||!token||!from){ showToast('Fill all three Twilio fields','error'); return; }
+  const creds = ls.get(CREDS_KEY);
+  creds.twilioSid=sid; creds.twilioToken=token; creds.twilioFrom=from;
+  ls.set(CREDS_KEY, creds);
+  setSmsStatus(true);
+  closeModal('modal-sms');
+  showToast('Twilio configured — SMS will send via local proxy','success');
+}
+
+function setSmsStatus(ok){
+  g('sms-status').textContent = ok ? 'Configured — sends via proxy' : 'Not configured';
+  g('sms-status').className   = 'pcard-status'+(ok?' connected':'');
+  g('sms-btn').textContent    = ok ? 'Edit' : 'Configure';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PLATFORM ROUTING
+// ═══════════════════════════════════════════════════════════════
+function bestPlatform(lead){
+  if(lead.linkedin) return 'LinkedIn';
+  if(lead.email)    return 'Gmail';
+  if(lead.instagram && lead.instagram !== '') return 'Instagram';
+  if(lead.facebook) return 'Facebook';
+  if(lead.phone)    return 'SMS';
+  return 'Gmail';
+}
+
+function platformForItem(item){
+  // User may have overridden via chip — check item.platformOverride
+  return item.platformOverride || item.platform || bestPlatform(item.lead);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SEND LOGIC — dispatch per platform
+// ═══════════════════════════════════════════════════════════════
+async function dispatchSend(item){
+  const plat = platformForItem(item);
+  const msg1 = g(`msg1-${item.lead.id}`)?.value || item.msg1;
+  const msg2 = g(`msg2-${item.lead.id}`)?.value || item.msg2;
+  const fullMsg = msg1 + '\n\n' + msg2;
+
+  if(sendMode === 'draft'){
+    await copyToClipboard(fullMsg);
+    return { method:'draft', ok:true };
+  }
+
+  if(plat === 'Gmail' || plat === 'Email'){
+    if(!gmailToken) return { method:'draft', ok:true, note:'Gmail not connected — copied' };
+    return await sendGmail(item.lead, msg1, msg2);
+  }
+  if(plat === 'SMS'){
+    return await sendSMS(item.lead, fullMsg);
+  }
+  // Social: queue for tab opening
+  queueTab(item, plat, fullMsg);
+  return { method:'tab', ok:true };
+}
+
+// — Gmail send —
+async function sendGmail(lead, msg1, msg2){
+  const to      = lead.email;
+  const subject = `I built ${lead.name} a new website`;
+  const body    = msg1 + '\n\n' + msg2;
+  const raw     = makeGmailRaw(to, subject, body);
+  try{
+    const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+gmailToken,'Content-Type':'application/json'},
+      body: JSON.stringify({raw})
+    });
+    if(!res.ok){
+      const e = await res.json().catch(()=>({}));
+      if(res.status===401){ gmailToken=null; setGmailStatus(false); }
+      return {method:'gmail',ok:false,error:e?.error?.message||'Send failed'};
+    }
+    return {method:'gmail',ok:true};
+  } catch(e){
+    return {method:'gmail',ok:false,error:e.message};
+  }
+}
+
+function makeGmailRaw(to, subject, body){
+  const email = [
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `Content-Type: text/plain; charset=utf-8`,
+    `MIME-Version: 1.0`,
+    ``,
+    body
+  ].join('\n');
+  return btoa(unescape(encodeURIComponent(email)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+// — SMS via Twilio proxy —
+async function sendSMS(lead, msg){
+  const creds = ls.get(CREDS_KEY);
+  if(!creds.twilioSid){ return {method:'sms',ok:false,error:'Twilio not configured'}; }
+  // Proxy must be running locally: node proxy.js (see README in downloaded zip)
+  try{
+    const res = await fetch('http://localhost:3030/send-sms',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        to:   lead.phone,
+        body: msg,
+        from: creds.twilioFrom,
+        sid:  creds.twilioSid,
+        token:creds.twilioToken
+      })
+    });
+    if(!res.ok) return {method:'sms',ok:false,error:'Proxy error '+res.status};
+    return {method:'sms',ok:true};
+  } catch(e){
+    return {method:'sms',ok:false,error:'Proxy not running — start with: node proxy.js'};
+  }
+}
+
+// — Social: tab queue —
+function queueTab(item, plat, fullMsg){
+  const lead  = item.lead;
+  let url     = '';
+  const enc   = encodeURIComponent(fullMsg);
+
+  if(plat==='Instagram'){
+    const handle = (lead.instagram||'').replace('@','');
+    url = handle
+      ? `https://www.instagram.com/${handle}/`
+      : `https://www.instagram.com/direct/new/`;
+  } else if(plat==='Facebook'){
+    url = lead.facebook
+      ? `https://www.facebook.com/${lead.facebook}`
+      : `https://www.facebook.com/`;
+  } else if(plat==='LinkedIn'){
+    const li = (lead.linkedin||'').replace('in/','');
+    url = li
+      ? `https://www.linkedin.com/in/${li}/`
+      : `https://www.linkedin.com/messaging/compose/`;
+  }
+
+  tabQueue.push({id:lead.id, name:lead.name, plat, url, msg:fullMsg, opened:false});
+}
+
+function renderTabQueue(){
+  const tq = g('tab-queue');
+  if(!tabQueue.length){ tq.classList.remove('active'); return; }
+  tq.classList.add('active');
+  g('tq-list').innerHTML = tabQueue.map(t=>`
+    <div class="tq-item" id="tqi-${t.id}">
+      <span class="tq-name">${t.name} · <strong>${t.plat}</strong></span>
+      <button class="tq-open${t.opened?' done':''}" onclick="openTab(${t.id})">${t.opened?'✓ Opened':'Open tab'}</button>
+    </div>`).join('');
+}
+
+function openTab(id){
+  const t = tabQueue.find(x=>x.id===id);
+  if(!t) return;
+  window.open(t.url,'_blank');
+  // Copy message to clipboard so user can paste
+  copyToClipboard(t.msg);
+  t.opened = true;
+  renderTabQueue();
+  showToast(`${t.name} opened — message copied to clipboard`,'success');
+}
+
+function openAllTabs(){
+  const remaining = tabQueue.filter(t=>!t.opened);
+  remaining.forEach((t,i)=>{
+    setTimeout(()=>{ window.open(t.url,'_blank'); t.opened=true; }, i*400);
+  });
+  setTimeout(()=>{
+    copyToClipboard(remaining.map(t=>t.msg).join('\n\n---\n\n'));
+    renderTabQueue();
+    showToast(`Opened ${remaining.length} tabs — all messages copied`,'success');
+  }, remaining.length*400+100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GENERATE BATCH
+// ═══════════════════════════════════════════════════════════════
+async function generateBatch(){
+  const apiKey = g('cfg-apikey').value.trim();
+  if(!apiKey){ showToast('Add your Anthropic API key first','error'); return; }
+  if(isSending) return;
+  saveConfig();
+
+  const batchSize  = parseInt(g('cfg-batch').value)||25;
+  const sentIds    = getSentIds();
+  const previewUrls = getPreviewUrls();
+
+  // Only include leads that have a preview URL built
+  const withSite    = LEADS.filter(l => previewUrls[l.id]);
+  const noSite      = LEADS.filter(l => !previewUrls[l.id] && !sentIds.has(l.id));
+  const candidates  = withSite
+    .filter(l => !sentIds.has(l.id))
+    .sort((a,b) => b.wos - a.wos)
+    .slice(0, batchSize);
+
+  if(!candidates.length){
+    if(noSite.length){
+      showToast(`No sites built yet — add preview URLs in the sidebar for ${noSite.length} leads`, 'error');
+    } else {
+      showToast('All leads with sites have been contacted!','success');
+    }
+    return;
+  }
+
+  const btn = g('btn-generate');
+  btn.disabled=true; btn.classList.add('loading');
+  btn.querySelector('.btn-label').textContent=`Generating ${candidates.length} messages…`;
+  g('empty-state').style.display='none';
+  g('batch-ui').style.display='block';
+  g('batch-count').textContent=candidates.length;
+  tabQueue=[];
+
+  // Show warning if some leads are skipped due to missing site
+  const skipped = LEADS.filter(l => !sentIds.has(l.id) && !previewUrls[l.id]).length;
+  const statusEl = g('send-status');
+  if(skipped > 0){
+    statusEl.className='send-status active';
+    statusEl.textContent=`⚠ ${skipped} lead${skipped>1?'s':''} skipped — no preview site built yet. Add URLs in sidebar.`;
+  }
+
+  batch = candidates.map(l=>({
+    lead:l, msg1:'', msg2:'', variant:'A',
+    platform: bestPlatform(l),
+    platformOverride: null,
+    previewUrl: previewUrls[l.id],
+    ready:false
+  }));
+  renderLeadList();
+
+  let done=0;
+  for(const item of batch){
+    updateLeadCard(item,'loading');
+    try{
+      const r = await callClaudeForMessage(item.lead, item.previewUrl, apiKey);
+      item.msg1=r.msg1||''; item.msg2=r.msg2||'';
+      item.variant=r.variant||'A';
+      item.platform=r.platform||bestPlatform(item.lead);
+      item.ready=true;
+      updateLeadCard(item,'ready');
+    } catch(e){
+      // Fallback — still use the real preview URL
+      item.msg1=`Hey — I built a new website for ${item.lead.name} and wanted to show you: ${item.previewUrl}`;
+      item.msg2=`Grab 30 min here: ${g('cfg-calendly').value}`;
+      item.variant='A'; item.ready=true;
+      updateLeadCard(item,'ready');
+    }
+    done++;
+    btn.querySelector('.btn-label').textContent=`Generating… ${done}/${candidates.length}`;
+  }
+  btn.disabled=false; btn.classList.remove('loading');
+  btn.querySelector('.btn-label').textContent='Regenerate batch';
+  updateStats();
+  showToast(`${candidates.length} messages ready`,'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLAUDE API
+// ═══════════════════════════════════════════════════════════════
+async function callClaudeForMessage(lead, previewUrl, apiKey){
+  const cfg={
+    name:     g('cfg-name').value.trim()||'there',
+    calendly: g('cfg-calendly').value.trim(),
+  };
+  const sys=`You write two short cold outreach messages for a web design service.
+RULES: Direct, confident, friendly. Not salesy. Msg 1 under 4 sentences. No exclamation spam. No "I'd love to", "synergy".
+Msg 1: must contain the EXACT preview URL provided — do not alter, shorten, or replace it.
+Msg 2: just the Calendly booking link: ${cfg.calendly}
+From: ${cfg.name}
+VARIANTS: A=Instagram/FB default, B=LinkedIn/professional, C=SMS ultra-brief, D=no-website-at-all
+Output ONLY valid JSON: {"msg1":"...","msg2":"...","variant":"A|B|C|D","platform":"Instagram|LinkedIn|Facebook|Gmail|SMS"}`;
+
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:sys,
+      messages:[{role:'user',content:`Lead:
+Business: ${lead.name}
+Category: ${lead.cat}
+City: ${lead.city}
+Current website: ${lead.url} (issues: ${lead.issues})
+Reviews: ${lead.reviews} (${lead.rating}★)
+Instagram: ${lead.instagram||'none'}
+LinkedIn: ${lead.linkedin||'none'}
+Facebook: ${lead.facebook||'none'}
+Email: ${lead.email||'none'}
+Notes: ${lead.notes}
+
+PREVIEW URL (their personalised new site — use this exact URL in msg1):
+${previewUrl}`}]})
+  });
+  if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||'API error'); }
+  const data=await res.json();
+  const text=data.content.find(c=>c.type==='text')?.text||'{}';
+  const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+
+  // Safety net: if Claude somehow didn't include the URL, inject it
+  if(parsed.msg1 && !parsed.msg1.includes(previewUrl)){
+    parsed.msg1 = parsed.msg1.replace(/\[WEBSITE_LINK\]/gi, previewUrl);
+    if(!parsed.msg1.includes(previewUrl)){
+      parsed.msg1 = parsed.msg1.trimEnd() + '\n\n' + previewUrl;
+    }
+  }
+  return parsed;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SEND ALL
+// ═══════════════════════════════════════════════════════════════
+async function sendAll(){
+  if(isSending) return;
+  const ready=batch.filter(i=>i.ready && !getSentIds().has(i.lead.id));
+  if(!ready.length){ showToast('Nothing to send'); return; }
+
+  isSending=true;
+  const btn=g('btn-send-all');
+  btn.disabled=true;
+  btn.innerHTML=`<span>Sending…</span>`;
+  g('progress-wrap').classList.add('active');
+
+  const statusEl=g('send-status');
+  statusEl.className='send-status active';
+  statusEl.textContent='Starting batch…';
+
+  let done=0, errors=0;
+  for(const item of ready){
+    updateLeadCard(item,'sending');
+    statusEl.textContent=`Sending ${done+1} of ${ready.length} — ${item.lead.name}`;
+
+    const result = await dispatchSend(item);
+
+    const msg1=g(`msg1-${item.lead.id}`)?.value||item.msg1;
+    const msg2=g(`msg2-${item.lead.id}`)?.value||item.msg2;
+
+    sentLog.push({
+      leadId:   item.lead.id,
+      business: item.lead.name,
+      cat:      item.lead.cat,
+      city:     item.lead.city,
+      platform: platformForItem(item),
+      variant:  item.variant,
+      method:   result.method,
+      ok:       result.ok,
+      error:    result.error||'',
+      msg1, msg2,
+      sentAt:   new Date().toISOString(),
+    });
+    saveSentLog();
+
+    if(!result.ok) errors++;
+    updateLeadCard(item, result.ok?'sent':'errored');
+    done++;
+    g('progress-bar').style.width=`${Math.round(done/ready.length*100)}%`;
+    updateStats();
+    await new Promise(r=>setTimeout(r,280+Math.random()*150));
+  }
+
+  renderTabQueue();
+  isSending=false;
+  btn.disabled=false;
+
+  const socialCount = tabQueue.length;
+  const apiCount    = done - socialCount - errors;
+  statusEl.textContent = errors
+    ? `${done} processed — ${errors} error(s). Check log.`
+    : `${apiCount} sent via API · ${socialCount} tabs queued · ${errors} errors`;
+  statusEl.className='send-status active'+(errors?' error':'');
+
+  btn.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Done`;
+  showToast(`${done} processed`+(errors?` — ${errors} errors`:''),'success');
+  setTimeout(()=>{
+    btn.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send all`;
+  },3000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER CARDS
+// ═══════════════════════════════════════════════════════════════
+function renderLeadList(){
+  g('lead-list').innerHTML=batch.map(item=>`
+    <div class="lead-card" id="card-${item.lead.id}">
+      <div class="lead-card-top">
+        <div class="avatar">${initials(item.lead.name)}</div>
+        <div class="lead-meta">
+          <div class="lead-name">${item.lead.name}</div>
+          <div class="lead-sub"><span>${item.lead.cat}</span><span>·</span><span>${item.lead.city}</span><span>·</span><span>${item.lead.wos} WOS</span></div>
+          <div class="lead-badges">
+            <span class="badge badge-${item.lead.priority==='Hot'?'hot':'warm'}">${item.lead.priority}</span>
+          </div>
+        </div>
+        <div class="lead-card-status" id="status-${item.lead.id}"></div>
+      </div>
+      <div id="msgs-${item.lead.id}"><div style="color:var(--ink3);font-size:13px;padding:4px 0">Writing message…</div></div>
+    </div>`).join('');
+}
+
+function updateLeadCard(item, state){
+  const msgsEl=g(`msgs-${item.lead.id}`);
+  const statEl=g(`status-${item.lead.id}`);
+  const card=g(`card-${item.lead.id}`);
+  if(!msgsEl) return;
+
+  if(state==='loading'){
+    msgsEl.innerHTML=`<div style="color:var(--ink3);font-size:13px;padding:4px 0">Writing message…</div>`;
+    return;
+  }
+  if(state==='sent'){
+    card?.classList.add('sent');
+    statEl.innerHTML=`<span class="sent-badge">✓ Sent</span>`;
+    return;
+  }
+  if(state==='errored'){
+    card?.classList.add('errored');
+    statEl.innerHTML=`<span class="error-badge">Error</span>`;
+    return;
+  }
+  if(state==='sending'){
+    card?.classList.remove('errored');
+    card?.classList.add('sending');
+    statEl.innerHTML=`<span class="sending-badge">Sending…</span>`;
+    return;
+  }
+
+  // ready — render full card with platform chips + editable messages
+  const plat = platformForItem(item);
+  const previewUrl = item.previewUrl || getPreviewUrl(item.lead.id);
+
+  const chips = ['Gmail','SMS','Instagram','Facebook','LinkedIn'].map(p=>`
+    <button class="plat-chip ${p.toLowerCase()}${p==='LinkedIn'?'':''} ${plat===p?'active':''}"
+      onclick="overridePlatform(${item.lead.id},'${p}',this)">${p}</button>`).join('');
+
+  const urlBanner = previewUrl
+    ? `<div style="font-size:11px;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:5px 9px;margin-bottom:8px;font-family:ui-monospace,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+         🔗 ${previewUrl}
+       </div>`
+    : `<div class="url-missing-banner">⚠ No preview site — add URL in sidebar before sending</div>`;
+
+  msgsEl.innerHTML=`
+    ${urlBanner}
+    <div class="platform-row">
+      <label>Send via:</label>${chips}
+    </div>
+    <div class="messages-wrap">
+      <div class="msg-row">
+        <span class="msg-num">1</span>
+        <textarea class="msg-textarea" id="msg1-${item.lead.id}" rows="4">${esc(item.msg1)}</textarea>
+      </div>
+      <div class="msg-row">
+        <span class="msg-num">2</span>
+        <textarea class="msg-textarea short" id="msg2-${item.lead.id}" rows="2">${esc(item.msg2)}</textarea>
+      </div>
+      <div class="variation-label">Variation ${item.variant} · ${plat}</div>
+    </div>`;
+
+  g(`msg1-${item.lead.id}`).oninput=e=>{ item.msg1=e.target.value; };
+  g(`msg2-${item.lead.id}`).oninput=e=>{ item.msg2=e.target.value; };
+}
+
+function overridePlatform(leadId, plat, btn){
+  const item = batch.find(i=>i.lead.id===leadId);
+  if(!item) return;
+  item.platformOverride = plat;
+  // update chip active state
+  btn.closest('.platform-row').querySelectorAll('.plat-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // update variation label
+  const vl = btn.closest('.messages-wrap')?.querySelector('.variation-label');
+  if(vl) vl.textContent = `Variation ${item.variant} · ${plat}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SENT LOG
+// ═══════════════════════════════════════════════════════════════
+function renderLog(){
+  const el=g('log-container');
+  if(!sentLog.length){ el.innerHTML=`<div class="log-empty">No messages sent yet.</div>`; return; }
+  const rows=[...sentLog].reverse().map(r=>`
+    <tr>
+      <td><strong>${r.business}</strong><br><span style="font-size:11px;color:var(--ink3)">${r.city}</span></td>
+      <td>${r.cat}</td>
+      <td><span class="badge badge-platform">${r.platform}</span></td>
+      <td><span class="log-method ${r.method}">${r.method||'—'}</span></td>
+      <td class="log-time">${new Date(r.sentAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+    </tr>`).join('');
+  el.innerHTML=`<table class="log-table"><thead><tr><th>Business</th><th>Category</th><th>Platform</th><th>Method</th><th>Sent</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════
+function g(id){ return document.getElementById(id); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function initials(n){ return n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+
+function updateStats(){
+  const sent        = getSentIds();
+  const previewUrls = getPreviewUrls();
+  const sitesLinked = Object.keys(previewUrls).length;
+  const ready       = LEADS.filter(l=>!sent.has(l.id) && previewUrls[l.id]).length;
+  g('stat-ready').textContent = ready;
+  g('stat-sent').textContent  = sentLog.length;
+  g('stat-total').textContent = LEADS.length;
+  g('stat-hot').textContent   = sitesLinked + '/' + LEADS.length;
+  const hotLabel = g('stat-hot')?.closest('.stat-card')?.querySelector('.stat-label');
+  if(hotLabel) hotLabel.textContent = 'sites linked';
+  const d=new Date();
+  g('main-title').textContent=`Morning run — ${d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}`;
+}
+
+function switchTab(t){
+  g('content-preview').style.display=t==='preview'?'block':'none';
+  g('content-log').style.display=t==='log'?'block':'none';
+  g('tab-preview').className='tab'+(t==='preview'?' active':'');
+  g('tab-log').className='tab'+(t==='log'?' active':'');
+  if(t==='log') renderLog();
+}
+
+function setMode(m){
+  sendMode=m;
+  g('mode-auto').className='mode-btn'+(m==='auto'?' active':'');
+  g('mode-draft').className='mode-btn'+(m==='draft'?' active':'');
+}
+
+async function copyToClipboard(text){
+  try{ await navigator.clipboard.writeText(text); } catch{
+    const el=document.createElement('textarea');
+    el.value=text; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+  }
+}
+
+async function copyAllToClipboard(){
+  const all=batch.filter(i=>i.ready).map(i=>{
+    const m1=g(`msg1-${i.lead.id}`)?.value||i.msg1;
+    const m2=g(`msg2-${i.lead.id}`)?.value||i.msg2;
+    return `=== ${i.lead.name} (${platformForItem(i)}) ===\n${m1}\n\n${m2}`;
+  }).join('\n\n'+'-'.repeat(40)+'\n\n');
+  await copyToClipboard(all);
+  showToast('All messages copied to clipboard','success');
+}
+
+function openModal(id){ g(id).classList.add('show'); }
+function closeModal(id){ g(id).classList.remove('show'); }
+
+function showToast(msg, type=''){
+  const t=g('toast');
+  t.textContent=msg;
+  t.className='toast show'+(type?' '+type:'');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>{ t.className='toast'; },3200);
+}
+
+// close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); });
+});
+
+// config autosave
+['cfg-apikey','cfg-name','cfg-calendly','cfg-batch']
+  .forEach(id=>g(id)?.addEventListener('change',saveConfig));
+
+// ═══════════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════════
+sentLog=ls.get(SENT_KEY,[]);
+applyConfig();
+renderUrlManager();
+updateStats();
+</script>
+</body>
+</html>
