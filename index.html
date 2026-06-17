@@ -396,7 +396,7 @@ button{cursor:pointer;font-family:inherit;font-size:14px}
       <li>Add your domain/localhost as authorised origin</li>
       <li>Copy the Client ID and paste below</li>
     </ul>
-    <input type="text" id="gmail-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
+    <input type="text" id="gmail-client-id" value="212352630976-901ltds4t4b0ih6471knh2u0jfhajgh4.apps.googleusercontent.com">
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeModal('modal-gmail')">Cancel</button>
       <button class="btn-primary" onclick="saveGmailClientId()">Save &amp; authorise</button>
@@ -1206,6 +1206,17 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 // ═══════════════════════════════════════════════════════════════
 sentLog=ls.get(SENT_KEY,[]);
 applyConfig();
+// Pre-load Gmail client ID
+(function(){
+  const creds = ls.get(CREDS_KEY);
+  if(!creds.gmailClientId){
+    creds.gmailClientId = '212352630976-901ltds4t4b0ih6471knh2u0jfhajgh4.apps.googleusercontent.com';
+    ls.set(CREDS_KEY, creds);
+  }
+  if(g('gmail-client-id') && !g('gmail-client-id').value){
+    g('gmail-client-id').value = creds.gmailClientId;
+  }
+})();
 renderUrlManager();
 updateStats();
 </script>
